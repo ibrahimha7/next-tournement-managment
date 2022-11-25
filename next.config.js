@@ -5,6 +5,9 @@ const nextConfig = {
   swcMinify: true,
   experimental: {
     scrollRestoration: true,
+    fontLoaders: [
+      { loader: '@next/font/google', options: { subsets: ['arabic'] } },
+    ],
   },
   i18n,
   env: {
