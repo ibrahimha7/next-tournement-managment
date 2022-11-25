@@ -9,7 +9,16 @@ const nextConfig = {
   i18n,
   env: {
     NEXT_BASE_URL: process.env.NEXT_BASE_URL,
-  }
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'butlah-strapi.herokuapp.com',
+      },
+    ],
+  },
+  
 }
 
 module.exports = nextConfig

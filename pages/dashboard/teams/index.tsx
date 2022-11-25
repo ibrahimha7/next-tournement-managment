@@ -3,59 +3,59 @@ import React, { useEffect, useState } from 'react'
 import { DashboardLayout } from '../../../components/dashboardLayout'
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import ListWithAction from '../../../components/TableWithAction';
-import {
-    createColumnHelper
-} from '@tanstack/react-table'
-import { ITeams, IUser } from '../../../interfaces';
 import { useTranslation } from 'next-i18next';
+import { Axios } from '../../../services/Axios';
+
+
+const columns = [
+    {
+        title: 'الاسم',
+        key: 'name',
+        type: 'text' 
+    },
+    {
+        title: 'الشعار',
+        key: 'logo',
+        type: 'avatar'
+    }
+]
 
 export default function ManageTeams({ locale, data }: any) {
     const { t } = useTranslation()
-    const columnHelper = createColumnHelper<any>()
-    const columns = [
-        columnHelper.accessor(row => row.attributes, {
-            id: 'attributes',
-            cell: info => info.getValue(),
-            header: () => <span>{t('TEAM_NAME')}</span>,
-            footer: info => info.column.id,
-        }),
-        columnHelper.accessor(row => row.attributes, {
-            id: 'name',
-            cell: (info) => {
-                console.log('getValue', info.getValue())
-                return (
-                    <i>{info.getValue()}</i>
-                )
-            },
-            header: () => <span>{t('TEAM_NAME')}</span>,
-            footer: info => info.column.id,
-        }),
-        columnHelper.accessor(row => row.attributes, {
-            id: 'createdAt',
-            header: () => <span>{t('CREATED_AT')}</span>,
-            cell: info => info.renderValue(),
-            footer: info => info.column.id,
+    const [newData, setNewData] = useState<any>([])
+
+    const handleRenderTeams = () => {
+        const tempData:any[] = []
+        data.data.map((item:any) => {
+            const {id , attributes} = item || {}
+            const {name , logo} = attributes
+
+            tempData.push({
+                id,
+                name,
+                logo: `${process.env.NEXT_BASE_URL}${logo.data.attributes.url}`
+            })
+
         })
-    ]
+        setNewData(tempData)
+    }
 
     useEffect(() => {
-        console.log('columns', columns)
-    }, [columns])
-
-
+        if(data.data.length > 0) {
+            handleRenderTeams()
+        }
+    }, [data])
+        
     return (
         <DashboardLayout>
-            <ListWithAction columns={columns} action={'CREATE_TEAM'} data={[data] ?? []} title={t('TEAMS')} description={"إدارة الفرق"} />
+            <ListWithAction columns={columns} action={'CREATE_TEAM'} data={[newData] ?? []} title={t('TEAMS')} description={"إدارة الفرق"} />
         </DashboardLayout>
     )
 }
 
 export async function getStaticProps({ locale }: any) {
-    const res = await fetch(`${process.env.NEXT_BASE_URL}/teams?populate=*`)
-    const { data, meta } = await res.json()
-
-    if (res.status === 200) {
-        console.log('pass');
+    const {data, status} = await Axios(`/teams?populate=*`)
+    if (status === 200) {
         return {
             props: {
                 data,
